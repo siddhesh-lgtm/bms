@@ -29,7 +29,7 @@ function handleCoverUpload($file) {
 
 if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf($_POST['_csrf'] ?? '')) die('CSRF');
-    if (!hasPermission('book.create', $conn)) die('No permission');
+    requirePermission('book.create', $conn);
 
     $title = trim($_POST['title'] ?? '');
     $author = trim($_POST['author'] ?? '');
@@ -52,7 +52,7 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf($_POST['_csrf'] ?? '')) die('CSRF');
-    if (!hasPermission('book.edit', $conn)) die('No permission');
+    requirePermission('book.edit', $conn);
 
     $id = intval($_POST['id'] ?? 0);
     $title = trim($_POST['title'] ?? '');
@@ -80,12 +80,18 @@ if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($action === 'delete') {
-    // can call via GET with confirmation or via POST
-    if (!hasPermission('book.delete', $conn)) die('No permission');
-    $id = intval($_GET['id'] ?? 0);
+    // Support AJAX POST with CSRF and fallback GET
+    requirePermission('book.delete', $conn);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!verify_csrf($_POST['_csrf'] ?? '')) die('CSRF');
+        $id = intval($_POST['id'] ?? 0);
+    } else {
+        $id = intval($_GET['id'] ?? 0);
+    }
     $stmt = $conn->prepare("UPDATE books SET deleted_at = NOW() WHERE id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
+    if (is_ajax()) { header('Content-Type: application/json'); echo json_encode(['ok'=>true]); exit; }
     header("Location: index.php?deleted=1");
     exit;
 }

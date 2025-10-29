@@ -1,7 +1,7 @@
 <?php
 // books/create.php
 require_once __DIR__ . '/../auth/auth-check.php';
-if (!hasPermission('book.create', $conn)) die('Access denied');
+requirePermission('book.create', $conn);
 ?>
 <!doctype html>
 <html>

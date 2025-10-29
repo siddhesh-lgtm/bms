@@ -12,6 +12,7 @@ $rows = $conn->query("SELECT b.*, u.name as creator FROM books b LEFT JOIN users
 </head>
 <body class="p-4">
 <div class="container">
+  <input type="hidden" id="_csrf" value="<?= e(csrf_token()) ?>">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Books</h3>
     <div>
@@ -24,7 +25,7 @@ $rows = $conn->query("SELECT b.*, u.name as creator FROM books b LEFT JOIN users
     <thead><tr><th>Cover</th><th>Title</th><th>Author</th><th>Type</th><th>Actions</th></tr></thead>
     <tbody>
       <?php while($b = $rows->fetch_assoc()): ?>
-        <tr>
+        <tr data-book-id="<?=e($b['id'])?>">
           <td style="width:80px;">
           <?php
 $coverRel = $b['cover']; // e.g. assets/uploads/xxx.jpg
@@ -43,7 +44,7 @@ $coverUrl = '/bms/' . $coverRel;
           <td>
             <a class="btn btn-sm btn-primary" href="view.php?id=<?=e($b['id'])?>">View</a>
             <?php if(hasPermission('book.edit',$conn)): ?><a class="btn btn-sm btn-warning" href="edit.php?id=<?=e($b['id'])?>">Edit</a><?php endif; ?>
-            <?php if(hasPermission('book.delete',$conn)): ?><a class="btn btn-sm btn-danger" href="process.php?action=delete&id=<?=e($b['id'])?>" onclick="return confirm('Delete?')">Delete</a><?php endif; ?>
+            <?php if(hasPermission('book.delete',$conn)): ?><button class="btn btn-sm btn-danger js-book-delete">Delete</button><?php endif; ?>
           </td>
         </tr>
       <?php endwhile; ?>
@@ -55,6 +56,43 @@ $coverUrl = '/bms/' . $coverRel;
 <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function(){ $('#booksTable').DataTable(); });
+</script>
+<script>
+function showToast(message, type) {
+  const toast = document.createElement('div');
+  toast.className = 'alert alert-' + (type || 'info');
+  toast.style.position = 'fixed';
+  toast.style.top = '16px';
+  toast.style.right = '16px';
+  toast.style.zIndex = '9999';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const csrf = document.getElementById('_csrf')?.value || '';
+  document.querySelectorAll('tr[data-book-id]').forEach(function(row){
+    const id = row.getAttribute('data-book-id');
+    const btn = row.querySelector('.js-book-delete');
+    if (!btn) return;
+    btn.addEventListener('click', async function(){
+      if (!confirm('Delete this book?')) return;
+      btn.disabled = true;
+      try {
+        const res = await fetch('process.php', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new URLSearchParams({ action: 'delete', id, _csrf: csrf })
+        });
+        const data = res.headers.get('content-type')?.includes('application/json') ? await res.json() : { ok: res.ok };
+        if (data.ok) { row.remove(); showToast('Book deleted', 'success'); }
+        else { showToast('Delete failed', 'danger'); }
+      } catch(e){ showToast('Network error', 'danger'); }
+      finally { btn.disabled = false; }
+    });
+  });
+});
 </script>
 </body>
 </html>

@@ -101,3 +101,34 @@ function csrf_token() {
 function verify_csrf($token) {
     return !empty($_SESSION['_csrf']) && hash_equals($_SESSION['_csrf'], $token);
 }
+
+/**
+ * Flash messaging + friendly access denial helpers
+ */
+function set_flash($type, $message) {
+    $_SESSION['_flash'] = ['type' => $type, 'message' => $message];
+}
+function get_flash() {
+    if (empty($_SESSION['_flash'])) return null;
+    $f = $_SESSION['_flash'];
+    unset($_SESSION['_flash']);
+    return $f;
+}
+function deny_access() {
+    http_response_code(403);
+    set_flash('danger', 'Access denied');
+    header('Location: /bms/index.php');
+    exit;
+}
+function requirePermission($code, $conn) {
+    if (!hasPermission($code, $conn)) {
+        deny_access();
+    }
+}
+
+/** Detect AJAX requests */
+function is_ajax() {
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    $xhr = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
+    return (stripos($accept, 'application/json') !== false) || strcasecmp($xhr, 'XMLHttpRequest') === 0;
+}

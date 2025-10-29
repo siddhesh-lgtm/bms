@@ -9,6 +9,7 @@ if (!isLoggedIn()) {
 
 // Fetch role name for header display
 $roleName = '';
+$flash = get_flash();
 $roleId = currentUserRoleId();
 $stmt = $conn->prepare("SELECT name FROM roles WHERE id = ?");
 $stmt->bind_param("i", $roleId);
@@ -31,6 +32,11 @@ $stmt->close();
 </head>
 <body class="p-4 bg-light">
 <div class="container">
+  <?php if ($flash): ?>
+    <div class="alert alert-<?= e($flash['type']) ?>">
+      <?= e($flash['message']) ?>
+    </div>
+  <?php endif; ?>
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Welcome, <?= e(currentUserName()) ?> (<?= e($roleName ?: ('role #' . (int)$roleId)) ?>)</h4>
     <a class="btn btn-outline-danger" href="auth/logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
