@@ -1,7 +1,8 @@
 <?php
 // users/user_create.php
 require_once __DIR__ . '/../auth/auth-check.php';
-if (!hasPermission('user.create',$conn) && !hasPermission('user.edit',$conn)) {
+// Require explicit create permission to access this page
+if (!hasPermission('user.create', $conn)) {
     die('Access denied');
 }
 $roles = $conn->query("SELECT id,name FROM roles ORDER BY id");
@@ -9,6 +10,8 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf($_POST['_csrf'] ?? '')) die('CSRF');
+    // Double-check permission at submit time to enforce real-time changes
+    if (!hasPermission('user.create', $conn)) die('Access denied');
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';

@@ -1,5 +1,5 @@
 <?php
-// roles/edit_permissions.php
+
 require_once __DIR__ . '/../auth/auth-check.php';
 if (!hasPermission('role.manage', $conn)) {
     die('Access denied');
@@ -50,3 +50,4 @@ $assigned = getPermissionsForRole($role_id, $conn);
 </div>
 </body>
 </html>
+

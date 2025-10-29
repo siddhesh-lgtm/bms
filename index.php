@@ -15,8 +15,10 @@ $stmt->bind_param("i", $roleId);
 $stmt->execute();
 $stmt->bind_result($roleName);
 $stmt->fetch();
-$stmt->close();
+$stmt->close();  
 ?>
+
+
 <!doctype html>
 
 <html>
