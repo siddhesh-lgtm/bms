@@ -11,7 +11,10 @@ if (!hasPermission('book.create', $conn)) die('Access denied');
 </head>
 <body class="p-4">
 <div class="container">
-  <h4>Create Book</h4>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Create Book</h4>
+    <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
+  </div>
   <form action="process.php" method="post" enctype="multipart/form-data">
     <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
     <input type="hidden" name="action" value="create">

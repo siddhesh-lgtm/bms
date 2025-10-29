@@ -37,6 +37,7 @@ if (!$book) {
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0"><?= e($book['title']) ?></h4>
     <div>
+      <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
       <?php if (hasPermission('book.edit', $conn)): ?>
         <a class="btn btn-warning btn-sm" href="edit.php?id=<?= e($book['id']) ?>">Edit</a>
       <?php endif; ?>

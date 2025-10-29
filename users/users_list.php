@@ -13,7 +13,10 @@ $res = $conn->query("SELECT u.id,u.name,u.email,u.is_active,r.name as role_name 
 </head>
 <body class="p-4">
 <div class="container">
-  <h4>Users</h4>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Users</h4>
+    <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
+  </div>
   <?php if(hasPermission('user.create',$conn)): ?>
     <a class="btn btn-success mb-3" href="user_create.php">Create User</a>
   <?php endif; ?>

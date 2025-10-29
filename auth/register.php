@@ -48,7 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="col-md-6">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h4 class="card-title mb-3">Register</h4>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title mb-0">Register</h4>
+            <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
+          </div>
           <?php foreach($errors as $err): ?>
             <div class="alert alert-danger"><?= e($err) ?></div>
           <?php endforeach; ?>

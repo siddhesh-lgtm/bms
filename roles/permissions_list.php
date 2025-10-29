@@ -58,6 +58,7 @@ $perms = $conn->query("SELECT * FROM permissions ORDER BY id ASC");
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>Manage Permissions</h4>
     <div>
+      <a href="/bms/index.php" class="btn btn-outline-secondary btn-sm">Home</a>
       <a href="index.php" class="btn btn-outline-secondary btn-sm">Back to Roles</a>
     </div>
   </div>

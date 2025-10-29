@@ -70,9 +70,11 @@ if (!$permission_id) {
             <div class="alert alert-success">
               ✅ Permission deleted successfully.
             </div>
+            <a href="/bms/index.php" class="btn btn-outline-secondary">Home</a>
             <a href="permissions_list.php" class="btn btn-primary">Back to Permissions</a>
           <?php elseif ($error): ?>
             <div class="alert alert-danger"><?= e($error) ?></div>
+            <a href="/bms/index.php" class="btn btn-outline-secondary">Home</a>
             <a href="permissions_list.php" class="btn btn-secondary">Back</a>
           <?php else: ?>
             <h5 class="card-title mb-3 text-danger">Confirm Deletion</h5>
@@ -83,6 +85,7 @@ if (!$permission_id) {
             </ul>
             <form method="post">
               <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
+              <a href="/bms/index.php" class="btn btn-outline-secondary">Home</a>
               <button type="submit" class="btn btn-danger">Yes, Delete</button>
               <a href="permissions_list.php" class="btn btn-secondary">Cancel</a>
             </form>

@@ -47,7 +47,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="col-md-5">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h4>Login</h4>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="mb-0">Login</h4>
+            <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
+          </div>
           <?php if($err): ?><div class="alert alert-danger"><?= e($err) ?></div><?php endif; ?>
           <?php if(!empty($_GET['registered'])): ?><div class="alert alert-success">Registered. Login now.</div><?php endif; ?>
           <form method="post">

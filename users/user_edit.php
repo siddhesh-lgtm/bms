@@ -56,7 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Edit User</h4>
-    <a class="btn btn-outline-secondary btn-sm" href="users_list.php">Back</a>
+    <div>
+      <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
+      <a class="btn btn-outline-secondary btn-sm" href="users_list.php">Back</a>
+    </div>
   </div>
 
   <?php foreach($errors as $err): ?><div class="alert alert-danger"><?= e($err) ?></div><?php endforeach; ?>

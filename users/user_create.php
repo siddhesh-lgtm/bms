@@ -36,7 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="p-4">
 <div class="container">
-  <h4>Create user</h4>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Create user</h4>
+    <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
+  </div>
   <?php foreach($errors as $err): ?><div class="alert alert-danger"><?= e($err) ?></div><?php endforeach; ?>
   <form method="post">
     <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">

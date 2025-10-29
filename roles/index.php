@@ -29,7 +29,7 @@ $res = $conn->query("SELECT * FROM roles ORDER BY id");
       <?php endwhile; ?>
     </tbody>
   </table>
-  <a href="/index.php" class="btn btn-link">Home</a>
+  <a href="/bms/index.php" class="btn btn-link">Home</a>
 </div>
 </body>
 </html>

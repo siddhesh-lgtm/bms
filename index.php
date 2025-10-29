@@ -18,6 +18,7 @@ $stmt->fetch();
 $stmt->close();
 ?>
 <!doctype html>
+
 <html>
 <head>
   <meta charset="utf-8">
@@ -88,7 +89,7 @@ $stmt->close();
 
   <div class="mt-4">
     <div class="alert alert-info mb-0">
-      Tip: Use the Roles & Permissions section to assign capabilities to each role. After updates, log out and back in to refresh your session.
+      <!-- Tip: Use the Roles & Permissions section to assign capabilities to each role. After updates, log out and back in to refresh your session. -->
     </div>
   </div>
 </div>
