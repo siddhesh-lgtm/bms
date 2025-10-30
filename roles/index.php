@@ -4,9 +4,9 @@ require_once __DIR__ . '/../auth/auth-check.php';
 if (!hasPermission('role.manage', $conn)) {
     die('Access denied');
 }
-
 $res = $conn->query("SELECT * FROM roles ORDER BY id");
 ?>
+
 <!doctype html>
 <html>
 <head>

@@ -3,6 +3,27 @@
 require_once __DIR__ . '/../auth/auth-check.php';
 requirePermission('book.create', $conn);
 ?>
+<?php
+// If requested as an AJAX fragment, return only the form HTML so it can be loaded into a modal.
+if (isset($_GET['ajax']) && $_GET['ajax']) {
+  ?>
+  <form action="process.php" method="post" enctype="multipart/form-data" class="js-ajax-create-form">
+    <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
+    <input type="hidden" name="action" value="create">
+    <div class="mb-2"><input class="form-control" name="title" placeholder="Title" required></div>
+    <div class="mb-2"><input class="form-control" name="author" placeholder="Author"></div>
+    <div class="mb-2"><input class="form-control" name="type" placeholder="Type"></div>
+    <div class="mb-2"><textarea class="form-control" name="description" placeholder="Description"></textarea></div>
+    <div class="mb-2"><input class="form-control" type="file" name="cover" accept="image/*"></div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary">Create</button>
+      <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancel</button>
+    </div>
+  </form>
+  <?php
+  exit;
+}
+?>
 <!doctype html>
 <html>
 <head>

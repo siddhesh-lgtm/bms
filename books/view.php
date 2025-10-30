@@ -39,11 +39,10 @@ if (!$book) {
     <div>
       <a class="btn btn-outline-secondary btn-sm" href="/bms/index.php">Home</a>
       <?php if (hasPermission('book.edit', $conn)): ?>
-        <a class="btn btn-warning btn-sm" href="edit.php?id=<?= e($book['id']) ?>">Edit</a>
+        <button class="btn btn-warning btn-sm js-open-edit" data-id="<?= e($book['id']) ?>">Edit</button>
       <?php endif; ?>
       <?php if (hasPermission('book.delete', $conn)): ?>
-        <a class="btn btn-danger btn-sm" href="process.php?action=delete&id=<?= e($book['id']) ?>"
-           onclick="return confirm('Delete this book?')">Delete</a>
+        <button class="btn btn-danger btn-sm js-ajax-delete" data-id="<?= e($book['id']) ?>">Delete</button>
       <?php endif; ?>
       <a class="btn btn-outline-secondary btn-sm" href="index.php">Back</a>
     </div>
@@ -90,5 +89,108 @@ $coverUrl = '/bms/' . $coverRel;
     </div>
   </div>
 </div>
+  <!-- Edit modal (bootstrap) -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Book</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center text-muted">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="hidden" id="_csrf" value="<?= e(csrf_token()) ?>">
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  // small toast helper
+  function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-' + (type || 'info');
+    toast.style.position = 'fixed';
+    toast.style.top = '16px';
+    toast.style.right = '16px';
+    toast.style.zIndex = '9999';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+
+  (function(){
+    const csrf = document.getElementById('_csrf')?.value || '';
+    const editModalEl = document.getElementById('editModal');
+    const editModal = new bootstrap.Modal(editModalEl);
+
+    // Open edit form in modal
+    document.querySelectorAll('.js-open-edit').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        const id = btn.getAttribute('data-id');
+        const body = document.querySelector('#editModal .modal-body');
+        body.innerHTML = '<div class="text-center text-muted">Loading…</div>';
+        editModal.show();
+        try {
+          const res = await fetch('edit.php?ajax=1&id=' + encodeURIComponent(id), { headers: { 'Accept': 'text/html' } });
+          if (!res.ok) { body.innerHTML = '<div class="text-danger">Unable to load form</div>'; return; }
+          const html = await res.text();
+          body.innerHTML = html;
+
+          // attach ajax submit handler
+          const form = body.querySelector('.js-ajax-edit-form');
+          if (form) {
+            form.addEventListener('submit', async function(e){
+              e.preventDefault();
+              const submitBtn = form.querySelector('button[type=submit]') || form.querySelector('button');
+              if (submitBtn) submitBtn.disabled = true;
+              const fd = new FormData(form);
+              // ensure CSRF present
+              if (!fd.has('_csrf')) fd.append('_csrf', csrf);
+              try {
+                const r = await fetch('process.php', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+                const data = r.headers.get('content-type')?.includes('application/json') ? await r.json() : { ok: r.ok };
+                if (data.ok) {
+                  showToast('Book updated', 'success');
+                  editModal.hide();
+                  // reload to show updated details
+                  window.location.reload();
+                } else {
+                  showToast(data.message || 'Update failed', 'danger');
+                }
+              } catch (ex) { showToast('Network error', 'danger'); }
+              finally { if (submitBtn) submitBtn.disabled = false; }
+            });
+          }
+        } catch (err) {
+          body.innerHTML = '<div class="text-danger">Error loading form</div>';
+        }
+      });
+    });
+
+    // Delete via AJAX
+    document.querySelectorAll('.js-ajax-delete').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        const id = btn.getAttribute('data-id');
+        if (!confirm('Delete this book?')) return;
+        btn.disabled = true;
+        try {
+          const res = await fetch('process.php', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: new URLSearchParams({ action: 'delete', id: id, _csrf: csrf })
+          });
+          const data = res.headers.get('content-type')?.includes('application/json') ? await res.json() : { ok: res.ok };
+          if (data.ok) { showToast('Book deleted', 'success'); window.location.href = 'index.php'; }
+          else showToast('Delete failed', 'danger');
+        } catch (e) { showToast('Network error', 'danger'); }
+        finally { btn.disabled = false; }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

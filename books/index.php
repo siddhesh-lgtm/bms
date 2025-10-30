@@ -16,7 +16,7 @@ $rows = $conn->query("SELECT b.*, u.name as creator FROM books b LEFT JOIN users
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Books</h3>
     <div>
-      <?php if(hasPermission('book.create',$conn)): ?><a class="btn btn-success" href="create.php">Add Book</a><?php endif; ?>
+      <?php if(hasPermission('book.create',$conn)): ?><button class="btn btn-success js-open-create">Add Book</button><?php endif; ?>
       <a class="btn btn-outline-secondary" href="/bms/index.php">Home</a>
     </div>
   </div>
@@ -43,7 +43,7 @@ $coverUrl = '/bms/' . $coverRel;
           <td><?= e($b['type']) ?></td>
           <td>
             <a class="btn btn-sm btn-primary" href="view.php?id=<?=e($b['id'])?>">View</a>
-            <?php if(hasPermission('book.edit',$conn)): ?><a class="btn btn-sm btn-warning" href="edit.php?id=<?=e($b['id'])?>">Edit</a><?php endif; ?>
+            <?php if(hasPermission('book.edit',$conn)): ?><button class="btn btn-sm btn-warning js-open-edit" data-id="<?=e($b['id'])?>">Edit</button><?php endif; ?>
             <?php if(hasPermission('book.delete',$conn)): ?><button class="btn btn-sm btn-danger js-book-delete">Delete</button><?php endif; ?>
           </td>
         </tr>
@@ -93,6 +93,89 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   });
 });
+</script>
+<!-- Modal used for Create/Edit -->
+<div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Book</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center text-muted">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function(){
+  const csrf = document.getElementById('_csrf')?.value || '';
+  const modalEl = document.getElementById('bookModal');
+  const modal = new bootstrap.Modal(modalEl);
+  const body = modalEl.querySelector('.modal-body');
+
+  async function loadFragment(url) {
+    body.innerHTML = '<div class="text-center text-muted">Loading…</div>';
+    modal.show();
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'text/html' } });
+      if (!res.ok) { body.innerHTML = '<div class="text-danger">Unable to load</div>'; return null; }
+      const html = await res.text();
+      body.innerHTML = html;
+      return body;
+    } catch (e) { body.innerHTML = '<div class="text-danger">Network error</div>'; return null; }
+  }
+
+  document.querySelectorAll('.js-open-create').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      loadFragment('create.php?ajax=1');
+    });
+  });
+
+  document.querySelectorAll('.js-open-edit').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const id = btn.getAttribute('data-id');
+      loadFragment('edit.php?ajax=1&id=' + encodeURIComponent(id)).then(function(container){
+        if (!container) return;
+        const form = container.querySelector('.js-ajax-edit-form');
+        if (form) attachAjaxForm(form);
+      });
+    });
+  });
+
+  function attachAjaxForm(form) {
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const submitBtn = form.querySelector('button[type=submit]') || form.querySelector('button');
+      if (submitBtn) submitBtn.disabled = true;
+      const fd = new FormData(form);
+      if (!fd.has('_csrf')) fd.append('_csrf', csrf);
+      try {
+        const res = await fetch('process.php', { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+        const data = res.headers.get('content-type')?.includes('application/json') ? await res.json() : { ok: res.ok };
+        if (data.ok) {
+          showToast('Saved', 'success');
+          modal.hide();
+          window.location.reload();
+        } else {
+          showToast(data.message || 'Save failed', 'danger');
+        }
+      } catch (e) { showToast('Network error', 'danger'); }
+      finally { if (submitBtn) submitBtn.disabled = false; }
+    });
+  }
+
+  // Attach create form when modal content inserted
+  modalEl.addEventListener('shown.bs.modal', function(){
+    const form = modalEl.querySelector('.js-ajax-create-form');
+    if (form) attachAjaxForm(form);
+    const editForm = modalEl.querySelector('.js-ajax-edit-form');
+    if (editForm) attachAjaxForm(editForm);
+  });
+})();
 </script>
 </body>
 </html>

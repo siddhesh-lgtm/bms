@@ -15,15 +15,55 @@ $stmt = $conn->prepare("
   WHERE b.id = ? AND b.deleted_at IS NULL
   LIMIT 1
 ");
+
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $res = $stmt->get_result();
 $book = $res->fetch_assoc();
-$stmt->close();
+$stmt->close(); 
 
 if (!$book) {
   http_response_code(404);
   echo 'Book not found';
+  exit;
+}
+
+// If requested as an AJAX fragment, return only the form HTML so it can be loaded into a modal.
+if (isset($_GET['ajax']) && $_GET['ajax']) {
+  ?>
+  <form action="process.php" method="post" enctype="multipart/form-data" class="js-ajax-edit-form">
+    <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
+    <input type="hidden" name="action" value="edit">
+    <input type="hidden" name="id" value="<?= e($book['id']) ?>">
+
+    <div class="mb-3">
+      <label class="form-label">Title</label>
+      <input class="form-control" name="title" value="<?= e($book['title']) ?>" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Author</label>
+      <input class="form-control" name="author" value="<?= e($book['author']) ?>">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Type</label>
+      <input class="form-control" name="type" value="<?= e($book['type']) ?>">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" name="description" rows="5"><?= e($book['description']) ?></textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Replace Cover (optional)</label>
+      <input class="form-control" type="file" name="cover" accept="image/*">
+      <div class="form-text">JPEG/PNG/GIF up to 2MB.</div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary">Save Changes</button>
+      <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancel</button>
+    </div>
+  </form>
+  <?php
   exit;
 }
 ?>

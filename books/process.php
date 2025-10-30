@@ -46,6 +46,8 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $conn->prepare("INSERT INTO books (title,author,type,description,cover,created_by) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("sssssi", $title, $author, $type, $description, $coverPath, $created_by);
     $stmt->execute();
+    $newId = $stmt->insert_id;
+    if (is_ajax()) { header('Content-Type: application/json'); echo json_encode(['ok'=>true,'id'=>$newId]); exit; }
     header("Location: index.php?created=1");
     exit;
 }
@@ -75,6 +77,7 @@ if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssssi", $title,$author,$type,$description,$id);
     }
     $stmt->execute();
+    if (is_ajax()) { header('Content-Type: application/json'); echo json_encode(['ok'=>true]); exit; }
     header("Location: index.php?updated=1");
     exit;
 }
